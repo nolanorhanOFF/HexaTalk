@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatApp</title>
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon"> <!-- Favicon -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #18191C; /* Fond noir */
+            color: white; /* Texte blanc */
+        }
+
+        header {
+            background-color: #202225; /* Couleur de fond sombre */
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header img {
+            width: 50px;
+            vertical-align: middle;
+        }
+
+        .content {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2F3136; /* Couleur de la barre latérale */
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+        }
+
+        .servers-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .servers-list li {
+            padding: 10px;
+            background-color: #202225; /* Couleur des éléments de serveur */
+            margin: 5px 0;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .servers-list li:hover {
+            background-color: #7289DA; /* Changer la couleur au survol */
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #36393F; /* Fond sombre pour la zone de chat */
+            padding: 20px;
+        }
+
+        .chat-header {
+            background-color: #202225; /* Couleur sombre de l'en-tête */
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header .server-name {
+            font-weight: bold;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background-color: #40444B; /* Fond gris pour les messages */
+        }
+
+        .message .username {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        #chat-input {
+            padding: 10px;
+            border: 1px solid #2F3136;
+            margin-top: 10px;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #40444B; /* Fond gris pour l'input */
+            color: white;
+        }
+
+        .user-list {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        .user-list li {
+            padding: 5px;
+            background-color: #2F3136; /* Fond sombre pour la liste d'utilisateurs */
+            color: white;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .btn {
+            background-color: #7289DA; /* Couleur des boutons */
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #5A6FBF; /* Couleur du bouton au survol */
+        }
+
+        /* Formulaire de connexion / inscription */
+        .login-form, .signup-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-form input, .signup-form input {
+            margin: 10px;
+            padding: 10px;
+            width: 200px;
+            border-radius: 5px;
+            border: 1px solid #7289DA;
+            background-color: #40444B;
+            color: white;
+        }
+
+        .error-msg {
+            color: red;
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="images/logo.png" alt="Logo"> <!-- Logo -->
+    <h1>ChatApp</h1>
+</header>
+
+<div class="content">
+    <!-- Formulaire de connexion -->
+    <div id="login-form" class="login-form">
+        <h2>Connexion</h2>
+        <input type="text" id="login-username" placeholder="Nom d'utilisateur" />
+        <input type="password" id="login-password" placeholder="Mot de passe" />
+        <button class="btn" id="login-btn">Se connecter</button>
+        <p id="login-error-msg" class="error-msg">Nom d'utilisateur ou mot de passe incorrect.</p>
+        <p>Pas encore inscrit ? <a href="javascript:void(0);" id="go-to-signup">Inscrivez-vous ici</a></p>
+    </div>
+
+    <!-- Formulaire d'inscription -->
+    <div id="signup-form" class="signup-form" style="display: none;">
+        <h2>Inscription</h2>
+        <input type="text" id="signup-username" placeholder="Nom d'utilisateur" />
+        <input type="password" id="signup-password" placeholder="Mot de passe" />
+        <button class="btn" id="signup-btn">S'inscrire</button>
+        <p id="signup-error-msg" class="error-msg">Nom d'utilisateur déjà pris.</p>
+        <p>Déjà inscrit ? <a href="javascript:void(0);" id="go-to-login">Connectez-vous ici</a></p>
+    </div>
+
+    <!-- Application Chat -->
+    <div id="app" style="display: none;">
+        <div class="sidebar">
+            <h2>Serveurs</h2>
+            <ul class="servers-list" id="servers-list">
+                <!-- Liste des serveurs -->
+            </ul>
+            <button class="btn" id="create-server-btn">Créer un serveur</button>
+            <ul class="user-list" id="user-list-ul">
+                <!-- Liste des utilisateurs -->
+            </ul>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header">
+                <span class="server-name" id="server-name">Aucun serveur sélectionné</span>
+                <button class="btn" id="delete-server-btn">Supprimer le serveur</button>
+            </div>
+            <div id="chat-messages">
+                <!-- Messages du chat -->
+            </div>
+            <textarea id="chat-input" placeholder="Entrez votre message ici..."></textarea>
+            <button class="btn" id="send-message-btn">Envoyer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentUser = null;
+    let currentServer = null;
+
+    // Liste des utilisateurs et serveurs simulée
+    const users = [{username: 'admin', password: 'admin123'}];  // Exemple d'utilisateur
+    const servers = [
+        {id: '1', name: 'Serveur 1', messages: [], users: ['admin']},
+        {id: '2', name: 'Serveur 2', messages: [], users: ['admin']},
+    ];
+
+    // Afficher l'écran d'inscription
+    document.getElementById('go-to-signup').addEventListener('click', function() {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('signup-form').style.display = 'flex';
+    });
+
+    // Afficher l'écran de connexion
+    document.getElementById('go-to-login').addEventListener('click', function() {
+        document.getElementById('signup-form').style.display = 'none';
+        document.getElementById('login-form').style.display = 'flex';
+    });
+
+    // Inscription
+    document.getElementById('signup-btn').addEventListener('click', function() {
+        const username = document.getElementById('signup-username').value;
+        const password = document.getElementById('signup-password').value;
+
+        const userExists = users.some(u => u.username === username);
+        if (userExists) {
+            document.getElementById('signup-error-msg').style.display = 'block';
+        } else {
+            users.push({username: username, password: password});
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'flex';
+        }
+    });
+
+    // Connexion
+    document.getElementById('login-btn').addEventListener('click', function() {
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+
+        const user = users.find(u => u.username === username && u.password === password);
+        if (user) {
+            currentUser = username;
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('app').style.display = 'flex';
+            loadServers();
+        } else {
+            document.getElementById('login-error-msg').style.display = 'block';
+        }
+    });
+
+    // Charger les serveurs
+    function loadServers() {
+        const serversList = document.getElementById('servers-list');
+        serversList.innerHTML = '';
+
+        servers.forEach(server => {
+            const li = document.createElement('li');
+            li.textContent = server.name;
+            li.addEventListener('click', function() {
+                currentServer = server;
+                document.getElementById('server-name').textContent = server.name;
+                loadMessages();
+                loadUsers();
+            });
+            serversList.appendChild(li);
+        });
+    }
+
+    // Charger les messages du serveur
+    function loadMessages() {
+        const chatMessages = document.getElementById('chat-messages');
+        chatMessages.innerHTML = '';
+        currentServer.messages.forEach(message => {
+            const div = document.createElement('div');
+            div.classList.add('message');
+            div.innerHTML = `<span class="username">${message.username}:</span> ${message.text}`;
+            chatMessages.appendChild(div);
+        });
+    }
+
+    // Charger les utilisateurs du serveur
+    function loadUsers() {
+        const userList = document.getElementById('user-list-ul');
+        userList.innerHTML = '';
+        currentServer.users.forEach(user => {
+            const li = document.createElement('li');
+            li.textContent = user;
+            userList.appendChild(li);
+        });
+    }
+
+    // Envoyer un message
+    document.getElementById('send-message-btn').addEventListener('click', function() {
+        const messageText = document.getElementById('chat-input').value;
+        if (messageText && currentServer) {
+            currentServer.messages.push({username: currentUser, text: messageText});
+            document.getElementById('chat-input').value = '';
+            loadMessages();
+        }
+    });
+
+    // Créer un serveur
+    document.getElementById('create-server-btn').addEventListener('click', function() {
+        const serverName = prompt('Nom du nouveau serveur');
+        if (serverName) {
+            const newServer = {id: Date.now().toString(), name: serverName, messages: [], users: [currentUser]};
+            servers.push(newServer);
+            loadServers();
+        }
+    });
+
+    // Supprimer le serveur
+    document.getElementById('delete-server-btn').addEventListener('click', function() {
+        if (currentServer) {
+            const serverIndex = servers.findIndex(s => s.id === currentServer.id);
+            if (serverIndex !== -1) {
+                servers.splice(serverIndex, 1);
+                loadServers();
+                currentServer = null;
+                document.getElementById('server-name').textContent = 'Aucun serveur sélectionné';
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
